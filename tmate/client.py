@@ -140,7 +140,8 @@ class TMateClient(object):
 
     async def connect(self):
         utils.logger.info(
-            "[%s] Connect SSH server %s:%d..." % (self.__class__.__name__, self._host, self._port)
+            "[%s] Connect SSH server %s:%d..."
+            % (self.__class__.__name__, self._host, self._port)
         )
         options = {
             "known_hosts": None,
@@ -262,9 +263,11 @@ class TMateClient(object):
 
     def process_message_in(self, message):
         if message[0] == utils.EnumTMateDaemonInMessageType.TMATE_IN_NOTIFY:
-            utils.logger.info("[Notify] %s" % message[1])
+            utils.logger.info("[Notify] %s" % utils.ensure_unicode(message[1]))
         elif message[0] == utils.EnumTMateDaemonInMessageType.TMATE_IN_SET_ENV:
-            os.environ[message[1]] = message[2]
+            os.environ[utils.ensure_unicode(message[1])] = utils.ensure_unicode(
+                message[2]
+            )
         elif message[0] == utils.EnumTMateDaemonInMessageType.TMATE_IN_READY:
             self._ready = True
         elif message[0] == utils.EnumTMateDaemonInMessageType.TMATE_IN_RESIZE:
@@ -281,7 +284,6 @@ class TMateClient(object):
                 self._shell.resize(size)
             self.update_layout(size)
         elif message[0] == utils.EnumTMateDaemonInMessageType.TMATE_IN_PANE_KEY:
-            print(message)
             keycode = message[2]
             buffer = b""
             if keycode < 256:
@@ -301,7 +303,7 @@ class TMateClient(object):
                     raise NotImplementedError(key)
             else:
                 raise NotImplementedError(keycode)
-            print(buffer)
+
             if self._shell:
                 self._shell.stdin.write(buffer)
             else:
