@@ -121,3 +121,9 @@ def safe_ensure_future(coro, loop=None):
 
     asyncio.ensure_future(_wrap())
     return fut
+
+
+def ensure_unicode(s):
+    if isinstance(s, bytes):
+        s = s.decode()
+    return s
