@@ -51,7 +51,7 @@ class Shell(object):
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                close_fds=True
+                close_fds=sys.platform != "win32"
             )
             self._stdin = proc.stdin
             self._stdout = proc.stdout
