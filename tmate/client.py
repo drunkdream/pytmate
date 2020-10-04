@@ -302,7 +302,10 @@ class TMateClient(object):
                 else:
                     raise NotImplementedError(key)
             else:
-                raise NotImplementedError(keycode)
+                utils.logger.warn(
+                    "[%s] Unknown keycode 0x%x" % (self.__class__.__name__, keycode)
+                )
+                return
 
             if self._shell:
                 self._shell.stdin.write(buffer)
