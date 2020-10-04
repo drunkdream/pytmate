@@ -19,6 +19,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: SSH connection to Actions
         run: |
-            ls -la
             python3 -m pip install -r requirements.txt
             python3 -m tmate
