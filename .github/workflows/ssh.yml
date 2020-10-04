@@ -1,4 +1,4 @@
-name: Ubuntu
+name: SSH-Test
 on:
   watch:
     types: started
@@ -14,5 +14,6 @@ jobs:
     steps:
     - name: SSH connection to Actions
       run: |
-          pip install -r requirements.txt
-          python -m tmate
+          ls -la
+          python3 -m pip install -r requirements.txt
+          python3 -m tmate
