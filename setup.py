@@ -25,7 +25,7 @@ def find_packages():
 setuptools.setup(
     author="drunkdream",
     author_email="drunkdream@qq.com",
-    name='pytmate',
+    name='tmate',
     license="MIT",
     description='tmate implemented by python.',
     version=tmate.VERSION,
