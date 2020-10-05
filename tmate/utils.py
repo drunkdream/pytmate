@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import ctypes
 import logging
 import os
 
@@ -127,3 +128,10 @@ def ensure_unicode(s):
     if isinstance(s, bytes):
         s = s.decode()
     return s
+
+
+def enable_ansi_code():
+    result = ctypes.windll.kernel32.SetConsoleMode(
+        ctypes.windll.kernel32.GetStdHandle(-11), 7
+    )
+    return result == 1
