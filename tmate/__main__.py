@@ -26,6 +26,7 @@ def main():
     args = parser.parse_args()
 
     if sys.platform == "win32":
+        utils.enable_ansi_code()
         loop = asyncio.ProactorEventLoop()
         asyncio.set_event_loop(loop)
     
