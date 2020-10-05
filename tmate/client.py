@@ -137,6 +137,7 @@ class TMateClient(object):
         self._channel_writer = None
         self._ready = False
         self._shell = None
+        self._stdin_buffer = b""
 
     async def connect(self):
         utils.logger.info(
@@ -285,9 +286,28 @@ class TMateClient(object):
             self.update_layout(size)
         elif message[0] == utils.EnumTMateDaemonInMessageType.TMATE_IN_PANE_KEY:
             keycode = message[2]
-            buffer = b""
+            buffer = self._stdin_buffer
+            self._stdin_buffer = b""
             if keycode < 256:
-                buffer = chr(keycode).encode()
+                buffer += chr(keycode).encode()
+                if sys.platform == "win32" and buffer.startswith(b"\x1b"):
+                    # ensure send ansi code together
+                    for it in (
+                        b"\x1b[A",
+                        b"\x1b[B",
+                        b"\x1b[C",
+                        b"\x1b[D",
+                    ):
+                        if buffer == it:
+                            break
+                    else:
+                        if len(buffer) > 3:
+                            utils.logger.info(
+                                "[%s] Wait for stdin ansi code: %r"
+                                % (self.__class__.__name__, buffer)
+                            )
+                        self._stdin_buffer = buffer
+                        return
             elif keycode & utils.KEYC_BASE:
                 keycode %= utils.KEYC_BASE
                 key = chr(keycode)
