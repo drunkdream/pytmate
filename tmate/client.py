@@ -157,6 +157,7 @@ class TMateClient(object):
         self._channel_writer, self._channel_reader, _ = await ssh_conn.open_session(
             subsystem="tmate", env=(), send_env=(), encoding=None
         )
+        ssh_conn.set_keepalive(300, 3)
         return True
 
     async def handshake(self):
