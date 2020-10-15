@@ -38,3 +38,36 @@ Web端访问终端可以在浏览器中打开`web session: `后面的URL。
 
 SSH访问可以使用`ssh session: `后面的命令行。
 
+## 在线调试Github Actions
+
+创建以下workflow：`remote-ssh.yml`
+
+```yml
+name: Remote-SSH
+on:
+  watch:
+    types: started
+jobs:
+  SSH:
+    name: Run on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.6]
+        os: [windows-latest, ubuntu-latest, macOS-latest]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -U tmate
+      - name: SSH connection to Actions
+        run: |
+            python -m tmate
+```
+
+`Star`项目会自动触发该workflow。
