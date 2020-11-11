@@ -23,4 +23,4 @@ jobs:
           python -m pip install -r requirements.txt
       - name: SSH connection to Actions
         run: |
-            python -m tmate
+            python -m tmate --wait-timeout=600
