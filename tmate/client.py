@@ -24,7 +24,12 @@ KEY_BINDINGS = [
     ("#", "list-buffers"),
     ("$", "command-prompt", "-I#S", "rename-session '%%'"),
     ("%", "split-window", "-h"),
-    ("&", "confirm-before", "-pkill-window #W? (y/n)", "kill-window",),
+    (
+        "&",
+        "confirm-before",
+        "-pkill-window #W? (y/n)",
+        "kill-window",
+    ),
     ("'", "command-prompt", "-pindex", "select-window -t ':%%'"),
     ("(", "switch-client", "-p"),
     (")", "switch-client", "-n"),
@@ -90,7 +95,14 @@ KEY_BINDINGS = [
     ("-r", "C-Down", "resize-pane", "-D"),
     ("-r", "C-Left", "resize-pane", "-L"),
     ("-r", "C-Right", "resize-pane", "-R"),
-    ("-n", "MouseDown1Pane", "select-pane", "-t=;", "send-keys", "-M",),
+    (
+        "-n",
+        "MouseDown1Pane",
+        "select-pane",
+        "-t=;",
+        "send-keys",
+        "-M",
+    ),
     ("-n", "MouseDrag1Border", "resize-pane", "-M"),
     ("-n", "MouseDown1Status", "select-window", "-t="),
     ("-n", "WheelDownStatus", "next-window"),
@@ -206,11 +218,20 @@ class TMateClient(object):
         self._channel_writer.write(buffer)
         self.update_layout(self._size)
 
-    async def serve(self, timeout=None):
+    async def serve(self, wait_timeout=None, timeout=None):
         time0 = time.time()
         while timeout is None or time.time() - time0 < timeout:
+            if not self._shell and wait_timeout and time.time() - time0 >= wait_timeout:
+                utils.logger.warn(
+                    "[%s] Wait for client timeout" % self.__class__.__name__
+                )
+                return
             try:
-                buffer = await self._channel_reader.read(4096)
+                buffer = await asyncio.wait_for(
+                    self._channel_reader.read(4096), timeout=1
+                )
+            except asyncio.TimeoutError:
+                continue
             except asyncssh.ConnectionLost:
                 break
             unpacker = msgpack.Unpacker()
