@@ -1,4 +1,4 @@
-name: SSH-Test
+name: SSH-Macos-py36
 on:
   watch:
     types: started

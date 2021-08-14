@@ -1,16 +1,16 @@
-name: SSH-Test
+name: SSH-Windows-py36
 on:
   watch:
     types: started
 jobs:
   SSH:
-    name: Run on ${{ matrix.os }}
+    name: Run on ${{ matrix.os }}-${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 4
+      max-parallel: 1
       matrix:
         python-version: [3.6]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [windows-latest]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}

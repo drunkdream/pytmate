@@ -1,4 +1,4 @@
-name: SSH-Test
+name: SSH-Linux-py27
 on:
   watch:
     types: started
