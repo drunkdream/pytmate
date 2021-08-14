@@ -4,7 +4,7 @@ on:
     types: started
 jobs:
   SSH:
-    name: Run on ${{ matrix.os }}-${{ matrix.python-version }}
+    name: Run on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1

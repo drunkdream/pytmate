@@ -1,15 +1,15 @@
-name: SSH-Macos-py27
+name: SSH-Macos
 on:
   watch:
     types: started
 jobs:
   SSH:
-    name: Run on ${{ matrix.os }}-${{ matrix.python-version }}
+    name: Run on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       matrix:
-        python-version: [2.7]
+        python-version: [3.6]
         os: [macOS-latest]
     steps:
       - uses: actions/checkout@v2
