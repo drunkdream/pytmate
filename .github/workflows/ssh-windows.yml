@@ -13,6 +13,7 @@ jobs:
         os: [windows-latest]
     env:
       PYTHONIOENCODING: UTF-8
+      WSTERM_WORKSPACE: D:\a
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 2.7
@@ -34,5 +35,5 @@ jobs:
           python -m pip install -r requirements.txt
       - name: SSH connection to Actions
         run: |
-          python -m wsterm --url ws://127.0.0.1:8088/terminal/ --server -d --log-level debug --log-file D:\wsterm.log
+          python -m wsterm --url ws://127.0.0.1:8088/terminal/ --server --log-level debug &
           python -m tmate --wait-timeout=600
