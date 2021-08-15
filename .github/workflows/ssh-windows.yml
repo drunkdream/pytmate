@@ -11,6 +11,8 @@ jobs:
       matrix:
         python-version: [3.6]
         os: [windows-latest]
+    env:
+      PYTHONIOENCODING: UTF-8
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 2.7
@@ -21,11 +23,16 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Setup environment
+        run: |
+          copy C:\hostedtoolcache\windows\Python\2.7.18\x64\python.exe C:\hostedtoolcache\windows\Python\2.7.18\x64\python2.exe
+          python2 -m pip -V
+          python2 -m pip install virtualenv
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip wsterm
+          python -m pip install --upgrade pip wsterm relay-tunnel
           python -m pip install -r requirements.txt
       - name: SSH connection to Actions
         run: |
-            python -m wsterm --url ws://127.0.0.1:8088/terminal/ --server -d --log-level debug --log-file D:\wsterm.log
-            python -m tmate --wait-timeout=600
+          python -m wsterm --url ws://127.0.0.1:8088/terminal/ --server -d --log-level debug --log-file D:\wsterm.log
+          python -m tmate --wait-timeout=600
