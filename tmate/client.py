@@ -284,7 +284,7 @@ class TMateClient(object):
         message = [
             utils.EnumTMateDaemonOutMessageType.TMATE_OUT_PTY_DATA,
             0,
-            b"\r\nPlease press `<ENTER>~.` to exit.\r\n",
+            b"\r\nPlease press `~.` to exit.\r\n",
         ]
         self.send_message(message)
 
@@ -361,7 +361,8 @@ class TMateClient(object):
                         utils.logger.warning(
                             "[%s] Ignore exit command" % self.__class__.__name__
                         )
-                        self._shell.stdin.write(b"\x08" * 4)
+                        bs_key = b"\x08"
+                        self._shell.stdin.write(bs_key * 4)
                         self.send_exit_help_message()
                     self._shell.stdin.write(b"\r")
                     self._line_buffer = b""
