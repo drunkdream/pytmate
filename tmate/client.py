@@ -150,6 +150,7 @@ class TMateClient(object):
         self._ready = False
         self._shell = None
         self._stdin_buffer = b""
+        self._line_buffer = b""
 
     async def connect(self):
         utils.logger.info(
@@ -277,10 +278,13 @@ class TMateClient(object):
                 self.send_message(message)
         utils.logger.warn("[%s] Shell process exit" % self.__class__.__name__)
         self._shell = None
+        self.send_exit_help_message()
+
+    def send_exit_help_message(self):
         message = [
             utils.EnumTMateDaemonOutMessageType.TMATE_OUT_PTY_DATA,
             0,
-            b"Please press `<ENTER>~.` to exit.\r\n",
+            b"\r\nPlease press `<ENTER>~.` to exit.\r\n",
         ]
         self.send_message(message)
 
@@ -350,6 +354,19 @@ class TMateClient(object):
                 return
 
             if self._shell:
+                if buffer != b"\r":
+                    self._line_buffer += buffer
+                else:
+                    if self._line_buffer == b"exit":
+                        utils.logger.warning(
+                            "[%s] Ignore exit command" % self.__class__.__name__
+                        )
+                        self._shell.stdin.write(b"\x08" * 4)
+                        self.send_exit_help_message()
+                    self._shell.stdin.write(b"\r")
+                    self._line_buffer = b""
+                    return
+
                 self._shell.stdin.write(buffer)
             else:
                 utils.logger.warn(
