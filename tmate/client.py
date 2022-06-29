@@ -248,6 +248,11 @@ class TMateClient(object):
         )
         self._shell = shell.Shell(size)
         proc, _, _, _ = await self._shell.create()
+        if not self._shell.pty_enabled:
+            self.send_pty_data(
+                b"PTY not supported on %s, limited capability supported\r\n\r\n"
+                % platform.platform().encode()
+            )
         tasks = [None]
         if self._shell.stderr:
             tasks.append(None)
@@ -269,24 +274,31 @@ class TMateClient(object):
                 if not buffer:
                     await asyncio.sleep(0.01)
                     break
+                if not self._shell.pty_enabled:
+                    for encoding in ("utf8", "gbk"):
+                        try:
+                            buffer = buffer.decode(encoding)
+                        except:
+                            continue
+                        else:
+                            buffer = buffer.encode("utf8")
+                            break
+                self.send_pty_data(buffer)
 
-                message = [
-                    utils.EnumTMateDaemonOutMessageType.TMATE_OUT_PTY_DATA,
-                    0,
-                    buffer,
-                ]
-                self.send_message(message)
         utils.logger.warn("[%s] Shell process exit" % self.__class__.__name__)
         self._shell = None
         self.send_exit_help_message()
 
-    def send_exit_help_message(self):
+    def send_pty_data(self, buffer):
         message = [
             utils.EnumTMateDaemonOutMessageType.TMATE_OUT_PTY_DATA,
             0,
-            b"\r\nPlease press `~.` to exit.\r\n",
+            buffer,
         ]
         self.send_message(message)
+
+    def send_exit_help_message(self):
+        self.send_pty_data(b"\r\nPlease press `~.` to exit.\r\n")
 
     def process_message_in(self, message):
         if message[0] == utils.EnumTMateDaemonInMessageType.TMATE_IN_NOTIFY:
@@ -356,19 +368,27 @@ class TMateClient(object):
             if self._shell:
                 if buffer != b"\r":
                     self._line_buffer += buffer
+                    if not self._shell.pty_enabled:
+                        self.send_pty_data(buffer)
+                    else:
+                        self._shell.stdin.write(buffer)
                 else:
                     if self._line_buffer == b"exit":
                         utils.logger.warning(
                             "[%s] Ignore exit command" % self.__class__.__name__
                         )
-                        bs_key = b"\x08"
-                        self._shell.stdin.write(bs_key * 4)
+                        if self._shell.pty_enabled:
+                            bs_key = b"\x08"
+                            self._shell.stdin.write(bs_key * 4)
                         self.send_exit_help_message()
+                    else:
+                        if not self._shell.pty_enabled:
+                            self._shell.stdin.write(self._line_buffer)
                     self._shell.stdin.write(b"\r")
+                    if not self._shell.pty_enabled:
+                        self.send_pty_data(b"\x08" * len(self._line_buffer))
+                        self._shell.stdin.write(b"\n")
                     self._line_buffer = b""
-                    return
-
-                self._shell.stdin.write(buffer)
             else:
                 utils.logger.warn(
                     "[%s] Received %r after shell process exit"
