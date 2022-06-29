@@ -18,6 +18,7 @@ class Shell(object):
         self._stdin = None
         self._stdout = None
         self._stderr = None
+        self._pty_enabled = False
 
     @property
     def stdin(self):
@@ -31,9 +32,14 @@ class Shell(object):
     def stderr(self):
         return self._stderr
 
+    @property
+    def pty_enabled(self):
+        return self._pty_enabled
+
     async def create(self):
         if sys.platform == "win32":
             if hasattr(ctypes.windll.kernel32, "CreatePseudoConsole"):
+                self._pty_enabled = True
                 cmd = (
                     "conhost.exe",
                     "--headless",
@@ -59,6 +65,7 @@ class Shell(object):
         else:
             import pty
 
+            self._pty_enabled = True
             cmdline = list(shlex.split(os.environ.get("SHELL", "sh")))
             exe = cmdline[0]
             if exe[0] != "/":
